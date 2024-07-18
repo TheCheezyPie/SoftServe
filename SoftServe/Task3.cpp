@@ -44,6 +44,8 @@ FReaderResult Reader::ReadItem(std::string ItemName, bool bFullFileName)
 
 FReaderResult Reader::ReadFile(std::string fileName, bool bFullFileName)
 {
+	std::lock_guard<std::mutex> lock(mtx);
+
 	using namespace std::chrono;
 	auto start = high_resolution_clock::now();
 
@@ -52,27 +54,7 @@ FReaderResult Reader::ReadFile(std::string fileName, bool bFullFileName)
 		fileName = PathToFolder + fileName;
 	}		
 
-	//cout << "------Reading file: " << fileName << endl;
-
-	switch (CheckExtension(fileName))
-	{
-	case EExtensionCheckResult::Avaliable:
-		break;
-	case EExtensionCheckResult::NotAvaliable:
-	{
-		//cout << "Wrong file extension!" << endl;
-		WriteAvailableExtensions();
-		return FReaderResult();
-		break;
-	}
-	case EExtensionCheckResult::Folder:
-	{		
-		return ParseDirectory(fileName);
-		break;
-	}
-	default:
-		break;
-	}
+	cout << "------Reading file: " << fileName << endl;
 
 	std::ifstream file(fileName);
 	if (!file.is_open())

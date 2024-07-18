@@ -40,7 +40,7 @@ int main()
 	//Task2();
 
 	Reader reader;
-	FReaderResult result = reader.ReadFile("");
+	FReaderResult result = reader.ReadItem("");
 	std::cout << result;
 	std::cout << std::endl << reader.WriteToFile(result, "result.txt");
 
