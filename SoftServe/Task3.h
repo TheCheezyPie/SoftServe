@@ -9,8 +9,8 @@ static constexpr const char* const AvailableExtensions[] = { "cpp", "c", "h", "h
 
 enum class EExtensionCheckResult : uint8_t
 {
-	Avaliable,
 	NotAvaliable,
+	Avaliable,
 	Folder
 };
 

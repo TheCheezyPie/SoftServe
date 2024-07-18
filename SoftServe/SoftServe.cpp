@@ -7,42 +7,45 @@
 
 void Task1()
 {
-	char*** list = (char***)malloc(8);
-	if (list)
+	char*** List = (char***)malloc(8);
+	if (List)
 	{
-		StringListInit(list);
-		StringListAdd(*list, "Hello");
-		StringListAdd(*list, "World1");
-		StringListAdd(*list, "World2");
-		StringListAdd(*list, "World3");
-		StringListAdd(*list, "World4");
-		StringListAdd(*list, "World5");
-		StringListAdd(*list, "World6");
-		StringListRemove(*list, "World3");
+		StringListInit(List);
+		StringListAdd(*List, "Hello");
+		StringListAdd(*List, "World1");
+		StringListAdd(*List, "World2");
+		StringListAdd(*List, "World3");
+		StringListAdd(*List, "World4");
+		StringListAdd(*List, "World5");
+		StringListAdd(*List, "World6");
+		StringListRemove(*List, "World3");
 
-		StringListReplaceInStrings(*list, "World", "Hell");
+		StringListReplaceInStrings(*List, "World", "Hell");
 
-		StringListSize(*list);
+		StringListSize(*List);
 
-		free(list);
+		free(List);
 	}
 }
 
 void Task2()
 {
-	AnyType any = 5.f;
-	std::cout << any.ToInt() << std::endl;
+	AnyType Any = 5.f;
+	std::cout << Any.ToInt() << std::endl;
+}
+
+void Task3()
+{
+	Reader Reader;
+	FReaderResult Result = Reader.ReadItem("");
+	std::cout << Result;
 }
 
 int main()
 {
 	//Task1();
 	//Task2();
-
-	Reader reader;
-	FReaderResult result = reader.ReadItem("");
-	std::cout << result;
-	std::cout << std::endl << reader.WriteToFile(result, "result.txt");
+	Task3();
 
 	std::cin.get();
 	return 0;

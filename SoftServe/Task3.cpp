@@ -11,69 +11,69 @@ static std::mutex mtx;
 
 FReaderResult Reader::ReadItem(std::string ItemName, bool bFullFileName)
 {
-	if (!bFullFileName)
-	{
-		ItemName = PathToFolder + ItemName;
-	}
-
-	//cout << "------Reading file: " << fileName << endl;
-
-	switch (CheckExtension(ItemName))
-	{
-	case EExtensionCheckResult::Avaliable:
-		ReadFile(ItemName, true);
-		break;
-	case EExtensionCheckResult::NotAvaliable:
-	{
-		//cout << "Wrong file extension!" << endl;
-		WriteAvailableExtensions();
-		return FReaderResult();
-		break;
-	}
-	case EExtensionCheckResult::Folder:
-	{
-		return ParseDirectory(ItemName);
-		break;
-	}
-	default:
-		break;
-	}
-
-	return FReaderResult();
-}
-
-FReaderResult Reader::ReadFile(std::string fileName, bool bFullFileName)
-{
-	std::lock_guard<std::mutex> lock(mtx);
-
 	using namespace std::chrono;
 	auto start = high_resolution_clock::now();
 
 	if (!bFullFileName)
 	{
-		fileName = PathToFolder + fileName;
-	}		
-
-	cout << "------Reading file: " << fileName << endl;
-
-	std::ifstream file(fileName);
-	if (!file.is_open())
-	{
-		//cout << "Error: file" << fileName << " not found" << endl;
-		return FReaderResult();
+		ItemName = PathToFolder + ItemName;
 	}
 
-	//cout << "File opened successfully" << std::endl;
-
-	FReaderResult Result = ParseLines(file);
-
+	FReaderResult Result;
+	
+	if (std::filesystem::is_directory(ItemName))
+	{
+		Result = ParseDirectory(ItemName);
+	}
+	else
+	{
+		Result = ReadFile(ItemName, true);
+	}
+	
 	auto stop = high_resolution_clock::now();
 	auto duration = duration_cast<milliseconds>(stop - start);
 	Result.ExecutionTime = duration.count();
 
-	file.close();
-
 	return Result;
+}
+
+FReaderResult Reader::ReadFile(std::string fileName, bool bFullFileName)
+{
+	std::unique_lock<std::mutex> lock(mtx);
+
+	if (!bFullFileName)
+	{
+		fileName = PathToFolder + fileName;
+	}
+
+	cout << "------Reading file: " << fileName << endl;
+
+	switch (CheckExtension(fileName))
+	{
+		case EExtensionCheckResult::Avaliable:
+		{
+			std::ifstream file(fileName);
+
+			if (!file.is_open())
+			{
+				return FReaderResult();
+			}
+
+			FReaderResult Result = ParseLines(file);
+
+			file.close();
+
+			return Result;
+		}
+		case EExtensionCheckResult::NotAvaliable:
+		{
+			cout << "Wrong file extension!" << endl;
+			//WriteAvailableExtensions();
+
+			return FReaderResult();
+		}
+	}
+	return FReaderResult();
 }
 
 void Reader::WriteAvailableExtensions()
@@ -94,6 +94,7 @@ FReaderResult Reader::ParseDirectory(const std::string& fileName)
 	std::vector<std::future<FReaderResult>> futures;
 	if (exists(fileName) && is_directory(fileName))
 	{
+		// iterate through the given directory
 		for (const auto& entry : recursive_directory_iterator(fileName))
 		{
 			if (is_regular_file(entry.status()))
@@ -104,6 +105,7 @@ FReaderResult Reader::ParseDirectory(const std::string& fileName)
 				);
 			}
 		}
+		// "join" the async tasks
 		for (auto& future : futures)
 		{
 			Result += future.get();
@@ -120,7 +122,6 @@ FReaderResult Reader::ParseDirectory(const std::string& fileName)
 EExtensionCheckResult Reader::CheckExtension(std::string fileName)
 {	
 	std::string ReversedFileExtension;
-	ReversedFileExtension.resize(MaxExtensionLength);
 	const int FileNameLength = fileName.length() - 1;
 
 	bool bLongerThanMax = false;
@@ -138,14 +139,14 @@ EExtensionCheckResult Reader::CheckExtension(std::string fileName)
 		{
 			if (!bLongerThanMax)
 			{
-				ReversedFileExtension[FileNameLength - i] = c;
+				ReversedFileExtension += c;
 			}
 		}
 		else
 		{
 			if (!bLongerThanMax)
 			{
-				ReversedFileExtension[FileNameLength - i] = '\0';
+				ReversedFileExtension += '\0';
 			}
 			else
 			{
@@ -162,8 +163,8 @@ EExtensionCheckResult Reader::CheckExtension(std::string fileName)
 	}
 
 	std::string NormalFileExtension;
-	NormalFileExtension.resize(MaxExtensionLength);
-	int ExtensionLength = ReversedFileExtension.length();
+	NormalFileExtension.resize(ReversedFileExtension.length());
+	int ExtensionLength = ReversedFileExtension.length() - 1;
 	NormalFileExtension[ExtensionLength] = '\0';
 
 	for (int i = 0; i < ExtensionLength; i++)
@@ -174,7 +175,7 @@ EExtensionCheckResult Reader::CheckExtension(std::string fileName)
 
 	for (auto AvailableExtension : AvailableExtensions)
 	{
-		if (NormalFileExtension.compare(AvailableExtension) != 0)
+		if (strcmp(NormalFileExtension.c_str(), AvailableExtension) == 0)
 		{
 			return EExtensionCheckResult::Avaliable;
 		}
