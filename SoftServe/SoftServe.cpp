@@ -37,7 +37,7 @@ void Task2()
 void Task3()
 {
 	Reader Reader;
-	FReaderResult Result = Reader.ReadItem("");
+	FReaderResult Result = Reader.ReadItem("input.cpp");
 	std::cout << Result;
 }
 

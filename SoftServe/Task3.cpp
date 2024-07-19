@@ -216,8 +216,12 @@ FReaderResult Reader::ParseLines(std::ifstream& file)
 					{
 						if (Line[i + 1] == '/')
 						{
-							Result.CommentLines++;
-							break;
+							if (MultilineStartIndex != Result.TotalLines)
+							{
+								Result.CommentLines++;
+							}
+							i++;
+							continue;
 						}
 						else if (Line[i + 1] == '*')
 						{
