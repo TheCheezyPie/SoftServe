@@ -189,7 +189,7 @@ FReaderResult Reader::ParseLines(std::ifstream& file)
 	FReaderResult Result;
 
 	// Used to account for multiline comments ( /**/ )
-	int MultilineStartIndex = -1;
+	int CommentLineIndex = -1;
 
 	std::string Line;
 	while (std::getline(file, Line))
@@ -202,7 +202,7 @@ FReaderResult Reader::ParseLines(std::ifstream& file)
 		}
 		else
 		{
-			bool bAccountedForLine = false;
+			bool bAccountedForCode = false;
 
 			for (int i = 0; i < Line.length(); i++)
 			{
@@ -214,24 +214,23 @@ FReaderResult Reader::ParseLines(std::ifstream& file)
 				{
 					if (i + 1 < Line.length())
 					{
-						if (Line[i + 1] == '/')
+						if (Line[i + 1] == '/' && CommentLineIndex == -1)
 						{
-							if (MultilineStartIndex != Result.TotalLines)
-							{
-								Result.CommentLines++;
-							}
-							i++;
-							continue;
+							Result.CommentLines++;
+							break;
 						}
 						else if (Line[i + 1] == '*')
 						{
 							Result.CommentLines++;
-							MultilineStartIndex = Result.TotalLines;
+							CommentLineIndex = Result.TotalLines;
 							i++;
 							continue;
 						}
 					}
-					Result.CodeLines++;
+					if (CommentLineIndex == -1)
+					{
+						Result.CodeLines++;
+					}
 				}
 				else if (Line[i] == '*')
 				{
@@ -239,26 +238,26 @@ FReaderResult Reader::ParseLines(std::ifstream& file)
 					{
 						if (Line[i + 1] == '/')
 						{
-							if (MultilineStartIndex != Result.TotalLines)
+							if (CommentLineIndex != Result.TotalLines)
 							{
 								Result.CommentLines++;
 							}
-							MultilineStartIndex = -1;
+							CommentLineIndex = -1;
 							i++;
 							continue;
 						}
 					}
-					if (!bAccountedForLine)
+					if (!bAccountedForCode)
 					{
 						Result.CodeLines++;
 					}
 				}
 				else
 				{
-					if (MultilineStartIndex == -1 && !bAccountedForLine)
+					if (CommentLineIndex == -1 && !bAccountedForCode)
 					{
 						Result.CodeLines++;
-						bAccountedForLine = true;
+						bAccountedForCode = true;
 					}
 				}
 			}
