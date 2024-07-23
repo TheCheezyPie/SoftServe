@@ -19,11 +19,6 @@ void StringListInit(char*** list)
 			NewList[1] = LastElem;
 		}
 	}
-	//else
-	//{
-	//	// WRITE ERROR SOMEHOW
-	//	//exit(EXIT_FAILURE);
-	//}
 }
 
 void StringListDestroy(char*** list)
@@ -49,6 +44,11 @@ void StringListDestroy(char*** list)
 
 void StringListAdd(char**& list, String str)
 {
+	if (strlen(str) == 0)
+	{
+		return;
+	}
+
 	if (list)
 	{
 		cout << "--------Adding " << str << endl;
@@ -65,7 +65,7 @@ void StringListAdd(char**& list, String str)
 			}
 			else
 			{
-				int s_size = strlen(str) + 1;
+				size_t s_size = strlen(str) + 1;
 				char* NewElem = (char*)malloc(s_size * sizeof(char));
 				if (NewElem)
 				{
@@ -256,9 +256,9 @@ void StringListReplaceInStrings(char** list, String before, String after)
 				char* found = strstr(list[i], before);
 				if (found)
 				{
-					int before_len = strlen(before);
-					int after_len = strlen(after);
-					int new_len = strlen(list[i]) - before_len + after_len + 1;
+					size_t before_len = strlen(before);
+					size_t after_len = strlen(after);
+					size_t new_len = strlen(list[i]) - before_len + after_len + 1;
 					char* NewElem = (char*)malloc(new_len * sizeof(char));
 					if (NewElem)
 					{

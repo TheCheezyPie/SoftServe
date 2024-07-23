@@ -19,6 +19,7 @@ void Task1()
 		StringListAdd(*List, "World5");
 		StringListAdd(*List, "World6");
 		StringListRemove(*List, "World3");
+		PrintList(*List);
 
 		StringListReplaceInStrings(*List, "World", "Hell");
 
@@ -45,7 +46,7 @@ int main()
 {
 	//Task1();
 	//Task2();
-	Task3();
+	//Task3();
 
 	std::cin.get();
 	return 0;

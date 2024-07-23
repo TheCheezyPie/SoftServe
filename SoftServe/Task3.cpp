@@ -39,7 +39,7 @@ FReaderResult Reader::ReadItem(std::string ItemName, bool bFullFileName)
 
 FReaderResult Reader::ReadFile(std::string fileName, bool bFullFileName)
 {
-	std::unique_lock<std::mutex> lock(mtx);
+	//std::unique_lock<std::mutex> lock(mtx);
 
 	if (!bFullFileName)
 	{
@@ -124,6 +124,17 @@ EExtensionCheckResult Reader::CheckExtension(std::string fileName)
 	std::string ReversedFileExtension;
 	const int FileNameLength = fileName.length() - 1;
 
+	int MaxExtensionLength = 0;
+	for (auto AvailableExtension : AvailableExtensions)
+	{
+		int ExtensionLength = strlen(AvailableExtension);
+		if (ExtensionLength > MaxExtensionLength)
+		{
+			MaxExtensionLength = ExtensionLength;
+		}
+	}
+	MaxExtensionLength++;
+
 	bool bLongerThanMax = false;
 
 	for (int i = FileNameLength; i >= 0; i--)
@@ -162,16 +173,7 @@ EExtensionCheckResult Reader::CheckExtension(std::string fileName)
 		}
 	}
 
-	std::string NormalFileExtension;
-	NormalFileExtension.resize(ReversedFileExtension.length());
-	int ExtensionLength = ReversedFileExtension.length() - 1;
-	NormalFileExtension[ExtensionLength] = '\0';
-
-	for (int i = 0; i < ExtensionLength; i++)
-	{
-		char c = ReversedFileExtension[(ExtensionLength - 1) - i];
-		NormalFileExtension[i] = c;
-	}
+	std::string NormalFileExtension = ReverseString(ReversedFileExtension);
 
 	for (auto AvailableExtension : AvailableExtensions)
 	{
@@ -182,6 +184,22 @@ EExtensionCheckResult Reader::CheckExtension(std::string fileName)
 	}
 
 	return EExtensionCheckResult::NotAvaliable;
+}
+
+std::string Reader::ReverseString(const std::string& ToReverse)
+{
+	std::string Result = ToReverse;
+	Result.resize(ToReverse.length());
+	int ExtensionLength = ToReverse.length() - 1;
+	Result[ExtensionLength] = '\0';
+
+	for (int i = 0; i < ExtensionLength; i++)
+	{
+		char c = ToReverse[(ExtensionLength - 1) - i];
+		Result[i] = c;
+	}
+
+	return Result;
 }
 
 FReaderResult Reader::ParseLines(std::ifstream& file)

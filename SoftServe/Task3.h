@@ -3,8 +3,6 @@
 #include <stdint.h>
 #include <string>
 
-// plus one for null terminator
-static constexpr uint8_t MaxExtensionLength = 4;
 static constexpr const char* const AvailableExtensions[] = { "cpp", "c", "h", "hpp"};
 
 enum class EExtensionCheckResult : uint8_t
@@ -73,6 +71,7 @@ public:
 
 private:
 	EExtensionCheckResult CheckExtension(std::string fileName);
+	std::string ReverseString(const std::string& ToReverse);
 	// Doesn't directly modify the file,
 	// the std::getline does
 	FReaderResult ParseLines(std::ifstream& file);
